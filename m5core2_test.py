@@ -21,7 +21,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import time
 from m5core2 import M5core2
 
 
@@ -50,6 +49,20 @@ class M5core2Test:
             while self.m5.touch.btn_gesture() is None:
                 pass
         print("exiting btn_gesture_test ..")
+
+    def add_delete_btn_test(self):
+
+        # delete three appbtns and run gesture test
+        v = [self.m5.btns['btn_1'], self.m5.btns['btn_2'], self.m5.btns['btn_3']]
+        k = ['btn_1', 'btn_2', 'btn_3']
+        d = dict(zip(k, v))
+        self.m5.delete_btns(d)
+        self.btn_gesture_test()
+
+        # repurpose space released by btn_ and btn_2, relabel btn_4 and run gesture test
+        self.m5.add_btns({'btn_12': {'loc': (0, 208, 158, 32), 'lbl': 'JoinBtn12'}})
+        self.m5.btns['btn_4']['lbl'] = 'Exit'
+        self.btn_gesture_test()
 
     def wifi_test(self):
 
@@ -97,13 +110,10 @@ class M5core2Test:
 
         self.m5.hard_reset()
 
-    def txt_test(self):
+    def write_test(self):
         """ test writing-in and erasing the window area """
         
-        self.m5.txt(tl=["This is a test for many ", "text", "chunks"], xl=[0, 176, 224], yl=[48, 64, 80])
-        time.sleep(5)
-        self.m5.erase_window()
-
+        self.m5.write(tl=["This is a test for many ", "text", "chunks"], xl=[0, 176, 224], yl=[48, 64, 80])
 
     def update_clock_test(self):
 
@@ -118,18 +128,18 @@ if __name__ == "__main__":
     """ execute various methods sequentially """
 
     m5t = M5core2Test(essid='TBD', pwd='????')
-
+    
     tests = ["btn_gesture_test",
+             "add_delete_btn_test",
              "wifi_test",
              "imu_test",
              "hall_test",
              "cpu_temp_test",
              "imu_scan_test",
              "sdcard_erase_test",
-             "txt_test",
+             "write_test",
              "update_clock_test",
              "hard_reset_test"]
-
     try:
         for test in tests:
             print("\n    ********** {} **********".format(test))

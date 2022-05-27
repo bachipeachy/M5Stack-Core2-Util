@@ -50,14 +50,16 @@ class WifiApp:
         while True:
             touched_btn = self.m5.touch.btn_gesture()
             if touched_btn is not None:
-                getattr(self, touched_btn['id'])(touched_btn)
+                getattr(self, list(touched_btn.keys())[0])(touched_btn)
 
     def btn_t(self, btn):
-        self.m5.update_clock()
+        
+        if btn['btn_t']['action'] == 'TAP' or 'HOLD':
+            self.m5.update_clock()
 
     def btn_w(self, btn):
 
-        if btn["action"] == "LEFT" or 'RIGHT':
+        if btn['btn_w']['action'] == "LEFT" or 'RIGHT':
             print("Not Implemented ..")
         else:
             print("Not Implemented ..")
@@ -67,7 +69,7 @@ class WifiApp:
 
         self.m5.erase_window()
         count = 15
-        loc = btn["loc"]
+        loc = btn['btn_1']['loc']
 
         def disconnect():
             print("disconnecting ..")
@@ -78,12 +80,11 @@ class WifiApp:
             self.m5.tft.text(font16, "TAP to turn on", 48, 132, ili9342c.WHITE, ili9342c.BLACK)
 
         def scan():
-            ls = self.m5.scan_wifi()
-            if len(ls) > count:
-                print("displaying first {} SSID's out of {} in range ..".format(count, len(ls)))
-                header = "  SSID (" + str(count) + " of " + str(len(ls)) + ")  RSSI    signal bars"
-                self.m5.tft.text(font8, header, 4, 36, ili9342c.YELLOW, ili9342c.BLACK)
-            return ls
+            lines = self.m5.scan_wifi()
+            print("displaying first {} SSID's out of {} in range ..".format(count, len(lines)))
+            header = "  SSID (" + str(count) + " of " + str(len(lines)) + ")  RSSI    signal bars"
+            self.m5.tft.text(font8, header, 4, 36, ili9342c.YELLOW, ili9342c.BLACK)
+            return lines
 
         def display(i, l):
             x1 = 2
@@ -108,46 +109,52 @@ class WifiApp:
             self.m5.tft.fill_rect(loc[0], loc[1], loc[2], loc[3], ili9342c.GREEN)
             self.m5.tft.text(font16, 'wifi', loc[0] + 8, loc[1] + 8, ili9342c.BLACK, ili9342c.GREEN)
 
-        if btn["action"] == "TAP" or "HOLD":
+
+        if btn['btn_1']['action'] == "TAP" or "HOLD":
 
             if self.m5.is_wifi_connected():
                 disconnect()
             else:
-                ls = scan()
-                for i, l in enumerate(ls):
-                    if i < count:
+                lines = scan()
+                for i, l in enumerate(lines):
+                    if i<count:
                         display(i, l)
                     if self.essid in l[0]:
                         connect()
 
     def btn_2(self, btn):
-        print("Not Implemented ..")
+        
+        if btn['btn_2']['action'] is not None:
+            print("Not Implemented ..")
 
             
     def btn_3(self, btn):
-        print("Not Implemented ..")
+        
+        if btn['btn_3']['action'] is not None:
+            print("Not Implemented ..")
 
     def btn_4(self, btn):
-        if btn['action'] == 'HOLD':
+        
+        if btn['btn_4']['action'] == 'TAP' or 'HOLD':
             self.m5.hard_reset()
 
     def btn_a(self, btn):
 
-        if btn['action'] == 'HOLD':
+        if btn['btn_a']['action'] == 'HOLD':
             self.m5.power_down()
         else:
             print("Not Implemented ..")
 
     def btn_b(self, btn):
 
-        if btn['action'] == 'HOLD':
+        if btn['btn_b']['action'] == 'HOLD':
             self.m5.hard_reset()
         else:
             print("Not Implemented ..")
 
     def btn_c(self, btn):
 
-        if btn['action'] == 'HOLD':
+        if btn['btn_c']['action'] == 'HOLD':
             self.m5.hard_reset()
         else:
             print("Not Implemented ..")
@@ -162,7 +169,7 @@ if __name__ == "__main__":
         wa.m5.btns['btn_4']['lbl'] = 'QUIT'
         wa.m5.paint_btns()
 
-        # delete three appbtns
+        # delete two appbtns
         v = [wa.m5.btns['btn_2'], wa.m5.btns['btn_3']]
         k = ['btn_2', 'btn_3']
         d = dict(zip(k, v))
