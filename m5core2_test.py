@@ -145,6 +145,7 @@ if __name__ == "__main__":
             print("\n    ********** {} **********".format(test))
             func = getattr(m5t, test)
             func()
+            print("'{}' completed successfully ..".format(test))
     except Exception as e:
         print(" oops I blew up ..", e)
         m5t.m5.hard_reset()

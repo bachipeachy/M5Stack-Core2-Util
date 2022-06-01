@@ -71,7 +71,7 @@ class M5core2:
         self.add_btns(self.get_appbtns())
         self.greet()
         print("* M5Stack Core2 initialization complete")
-        self.update_clock()
+        self.update_clock(dt=True)
 
     def power_up(self):
         """ turn on M5Stack Core2 """
@@ -175,24 +175,18 @@ class M5core2:
 
     def add_btns(self, btns):
 
-        if isinstance(btns, dict):
-            print("* adding {} btns {} ".format(len(btns), btns.keys()))
-            self.btns.update(btns)
-            self.paint_btns()
-            self.touch = self.enable_touch()
-        else:
-            print("* error expected type dict byt got {}".format(type(btns)))
+        print("* adding {} btns {} ".format(len(btns), btns.keys()))
+        self.btns.update(btns)
+        self.paint_btns()
+        self.touch = self.enable_touch()
 
     def delete_btns(self, btns):
 
-        if isinstance(btns, dict):
-            print("* deleting {} btns {} ".format(len(btns), btns.keys()))
-            for k, v in btns.items():
-                del self.btns[k]
-            self.erase_btns(btns)
-            self.touch = self.enable_touch()
-        else:
-            print("* error expected type dict byt got {}".format(type(btns)))
+        print("* deleting {} btns {} ".format(len(btns), btns.keys()))
+        for k, v in btns.items():
+            del self.btns[k]
+        self.erase_btns(btns)
+        self.touch = self.enable_touch()
 
     def paint_btns(self):
         """ paint or erase 'self.appbtns' in self.btns only   """
@@ -207,7 +201,6 @@ class M5core2:
                 self.tft.text(font16, vk['lbl'], vk['loc'][0] + 4, vk['loc'][1] + 8, ili9342c.YELLOW, ili9342c.BLUE)
 
     def erase_btns(self, btns):
-        print("* erasing btns ", btns)
 
         for k, vk in btns.items():
             self.tft.fill_rect(vk['loc'][0], vk['loc'][1], vk['loc'][2], vk['loc'][3], ili9342c.BLACK)
@@ -245,16 +238,17 @@ class M5core2:
         s = str(t[5]) if t[5] > 9 else '0' + str(t[5])
         hms = h + ':' + m + ':' + s
 
-        if dt is None:
+        if dt is not None:
+            self.erase_btns({'btn_t': self.btns['btn_t']})
             tl = [wd[t[6]], mo[t[1] - 1], str(t[2]) + ', ', hms]
             xl = [0, 64, 128, 192]
             yl = [4, 4, 4, 4]
         else:
+            self.tft.fill_rect(176, 0, 144, 32, ili9342c.BLACK)
             tl = [hms]
             xl = [192]
             yl = [4]
 
-        self.erase_btns({'btn_t': self.btns['btn_t']})
         self.write(f=font16, tl=tl, xl=xl, yl=yl, fg=ili9342c.YELLOW)
         print("* updated clock -> ", hms, t)
         return t
@@ -430,4 +424,3 @@ class M5core2:
 
         except Exception as e:
             print("ERROR: {}".format(e))
-
