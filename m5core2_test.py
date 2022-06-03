@@ -21,7 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-from m5core2_p import M5core2
+from m5core2 import M5core2
 
 
 class M5core2Test:
@@ -37,13 +37,13 @@ class M5core2Test:
         self.m5 = M5core2(essid, pwd, mdir=self.mdir, imu_samples=self.imu_samples,
                           imu_wait=self.imu_wait)
 
-    def btn_gesture_test(self):      
+    def btn_gesture_test(self):
         """ test method: touch.btn_gesture() """
-        
+
         touchctr = 4
         print("btn_gesture test runs for {} iterations ..\n"
               "on configured btns TAP, HOLD or swipe LEFT, RIGHT, UP or DOWN ..".format(touchctr))
-        
+
         for i in range(touchctr):
             print(i + 1, end='')
             while self.m5.touch.btn_gesture() is None:
@@ -61,7 +61,8 @@ class M5core2Test:
         # repurpose space released by btn_ and btn_2, relabel btn_4 and run gesture test
         self.m5.add_btn('btn_12', (0, 208, 158, 32), lbl='JoinBtn12')
 
-        self.m5.label_btn((0, 208, 158, 32), lbl = 'Exit')
+        self.m5.paint_btn(self.m5.loc_4, bg=self.m5.RED)
+        self.m5.paint_btn(self.m5.loc_4, lbl='Exit', bg=self.m5.RED)
         self.btn_gesture_test()
 
     def wifi_test(self):
@@ -112,7 +113,7 @@ class M5core2Test:
 
     def write_test(self):
         """ test writing-in and erasing the window area """
-        
+
         self.m5.write(tl=["This is a test for many ", "text", "chunks"], xl=[0, 176, 224], yl=[48, 64, 80])
 
     def update_clock_test(self):
@@ -128,7 +129,7 @@ if __name__ == "__main__":
     """ execute various methods sequentially """
 
     m5t = M5core2Test(essid='TBD', pwd='????')
-    
+
     tests = ["btn_gesture_test",
              "add_delete_btn_test",
              "wifi_test",

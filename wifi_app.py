@@ -25,7 +25,7 @@ import ili9342c
 import vga1_16x16 as font16
 import vga1_8x8 as font8
 
-from m5core2_p import M5core2
+from m5core2 import M5core2
 
 
 class WifiApp:
@@ -53,7 +53,7 @@ class WifiApp:
                 getattr(self, list(touched_btn.keys())[0])(touched_btn)
 
     def btn_t(self, btn):
-        
+
         if btn['btn_t']['action'] == 'TAP' or 'HOLD':
             self.m5.update_clock()
 
@@ -67,8 +67,9 @@ class WifiApp:
     def btn_1(self, btn):
         """ display scanned WiFi signal strengths and connect/disconnect chosen essid """
         loc = self.m5.loc_1
-        self.m5.color_btn(self.m5.loc_w, color=self.m5.BLACK)
+        self.m5.paint_btn(self.m5.loc_w, bg=self.m5.BLACK)
         count = 15
+
         def disconnect():
             print("disconnecting ..")
             _ = self.m5.disconnect_wifi()
@@ -107,7 +108,6 @@ class WifiApp:
             self.m5.tft.fill_rect(loc[0], loc[1], loc[2], loc[3], ili9342c.GREEN)
             self.m5.tft.text(font16, 'wifi', loc[0] + 8, loc[1] + 8, ili9342c.BLACK, ili9342c.GREEN)
 
-
         if btn['btn_1']['action'] == "TAP" or "HOLD":
 
             if self.m5.is_wifi_connected():
@@ -115,24 +115,23 @@ class WifiApp:
             else:
                 lines = scan()
                 for i, l in enumerate(lines):
-                    if i<count:
+                    if i < count:
                         display(i, l)
                     if self.essid in l[0]:
                         connect()
 
     def btn_2(self, btn):
-        
+
         if btn['btn_2']['action'] is not None:
             print("Not Implemented ..")
 
-            
     def btn_3(self, btn):
-        
+
         if btn['btn_3']['action'] is not None:
             print("Not Implemented ..")
 
     def btn_4(self, btn):
-        
+
         if btn['btn_4']['action'] == 'TAP' or 'HOLD':
             self.m5.hard_reset()
 
@@ -160,20 +159,19 @@ class WifiApp:
 
 if __name__ == "__main__":
     """ repurposing btn_1 as wifi app btn and deleting btn_2 and btn_3"""
-
+    
+    wa = WifiApp(essid='TBD', pwd='????')
     try:
-        wa = WifiApp(essid='TBD', pwd='????')
-        wa.m5.label_btn(wa.m5.loc_1, lbl = 'WiFi')
-        wa.m5.label_btn(wa.m5.loc_4, lbl = 'QUIT')
+        wa.m5.paint_btn(wa.m5.loc_1, lbl='WiFi')
+        wa.m5.paint_btn(wa.m5.loc_4, lbl='QUIT')
 
         # delete two appbtns
         wa.m5.delete_btn('btn_2', wa.m5.loc_2)
         wa.m5.delete_btn('btn_3', wa.m5.loc_3)
         wa.run_apps_forever()
-        
+
     except Exception as e:
         print(" oops I blew up ..", e)
-    
+
     finally:
         wa.m5.hard_reset()
-

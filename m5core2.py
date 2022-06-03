@@ -79,7 +79,7 @@ class M5core2:
         self.loc_6 = (80, 0, 78, 32)
         self.loc_7 = (160, 0, 78, 32)
         self.loc_8 = (240, 0, 78, 32)
-        
+
         self.BLACK = ili9342c.BLACK
         self.BLUE = ili9342c.BLUE
         self.RED = ili9342c.RED
@@ -91,12 +91,10 @@ class M5core2:
 
         self.touch = None
         self.btns = {'btn_a': {'loc': self.loc_a}, 'btn_b': {'loc': self.loc_b}, 'btn_c': {'loc': self.loc_c},
-                     'btn_t': {'loc': self.loc_t}, 'btn_w': {'loc': self.loc_w}}        
-        
+                     'btn_t': {'loc': self.loc_t}, 'btn_w': {'loc': self.loc_w}}
+
         self.add_appbtns()
-        print("init routine ...", self.btns)
         self.update_clock(dt=True)
-        
 
     def power_up(self):
         """ turn on M5Stack Core2 """
@@ -173,59 +171,48 @@ class M5core2:
         self.tft.text(font16, "M5Core2> initialized!", 0, 0, ili9342c.WHITE, ili9342c.BLACK)
 
     def add_appbtns(self):
-        self.add_btn('btn_1', self.loc_1, lbl='<11>', color=self.GREEN, fg=self.YELLOW, bg=self.MAGENTA)
-        self.add_btn('btn_2', self.loc_2, lbl="<2>", color=self.CYAN)
-        self.add_btn('btn_3', self.loc_3, color=self.RED, lbl="<3>", bg=self.RED)
-        self.add_btn('btn_4', self.loc_4, color=self.GREEN)
+        self.add_btn('btn_1', self.loc_1, lbl='Btn1')
+        self.add_btn('btn_2', self.loc_2, lbl='Btn2')
+        self.add_btn('btn_3', self.loc_3, lbl='Btn3')
+        self.add_btn('btn_4', self.loc_4, lbl='Btn4')
 
-    def color_btn(self, loc, color=None):
-        
-        if color is None:
-            color=self.BLUE
-        self.tft.fill_rect(loc[0], loc[1], loc[2], loc[3], color)
-        return self
-        
-    def label_btn(self, loc, lbl= None, color=None, fg=None, bg=None):
-        
+    def paint_btn(self, loc, lbl=None, fg=None, bg=None):
+
         if lbl is None:
             lbl = ''
-        if color is None:
-            color = self.BLUE
+        else:
+            lbl = lbl
         if fg is None:
-            fg=self.YELLOW
+            fg = self.YELLOW
         if bg is None:
-            bg=self.BLUE
-            
-        self.tft.text(font16, lbl, loc[0]+4, loc[1]+8, fg, bg)
+            bg = self.BLUE
+
+        self.tft.fill_rect(loc[0], loc[1], loc[2], loc[3], bg)
+        self.tft.text(font16, lbl, loc[0] + 4, loc[1] + 8, fg, bg)
+
         return self
 
     def add_btn(self, uid, loc, **kwargs):
-        
+
         print("* adding btn {} ".format(uid))
-
-        if  uid not in self.btns.keys():
-            if 'color' in kwargs.keys():
-                self.color_btn(loc, kwargs['color'])
-            else:
-                self.color_btn(loc)
-            self.label_btn(loc, **kwargs)
-
-            self.btns.update({uid: {'loc':loc}})
+        print(kwargs)
+        if uid not in self.btns.keys():
+            self.paint_btn(loc, **kwargs)
+            self.btns.update({uid: {'loc': loc}})
             self.touch = self.enable_touch()
-            
+
         else:
             print("* warning {} exists in self.btns".format('uid'))
-
 
     def delete_btn(self, uid, loc):
 
         if uid in self.btns.keys():
             print("* deleting  {} ".format(uid))
             del self.btns[uid]
-            self.color_btn(loc, color=self.BLACK)
+            self.paint_btn(loc, bg=self.BLACK)
             self.touch = self.enable_touch()
         else:
-            print("* warning no such {} to delete in self.btns".format(k))
+            print("* warning no such {} to delete in self.btns".format(uid))
 
     def write(self, tl, f=font8, xl=None, yl=None, fg=None, bg=None):
         """ write txt from a list at x,y coordinates in a list"""
@@ -256,7 +243,7 @@ class M5core2:
         hms = h + ':' + m + ':' + s
 
         if dt is not None:
-            self.color_btn(self.loc_t, color=self.BLACK)
+            self.paint_btn(self.loc_t, bg=self.BLACK)
             tl = [wd[t[6]], mo[t[1] - 1], str(t[2]) + ', ', hms]
             xl = [0, 64, 128, 192]
             yl = [4, 4, 4, 4]
@@ -441,10 +428,3 @@ class M5core2:
 
         except Exception as e:
             print("ERROR: {}".format(e))
-
-
-if __name__ == "__main__":
-    
-    m5 = M5core2(essid='TBD', pwd='????')
-    m5.hard_reset()
-
