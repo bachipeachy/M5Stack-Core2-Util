@@ -43,7 +43,7 @@ class M5core2Test:
         touchctr = 4
         print("btn_gesture test runs for {} iterations ..\n"
               "on configured btns TAP, HOLD or swipe LEFT, RIGHT, UP or DOWN ..".format(touchctr))
-
+        
         for i in range(touchctr):
             print(i + 1, end='')
             while self.m5.touch.btn_gesture() is None:
@@ -53,15 +53,15 @@ class M5core2Test:
     def add_delete_btn_test(self):
 
         # delete three appbtns and run gesture test
-        self.m5.delete_btn('btn_1', M5core2.btn_1)
-        self.m5.delete_btn('btn_2', M5core2.btn_2)
-        self.m5.delete_btn('btn_3', M5core2.btn_3)
+        self.m5.delete_btn('btn_1', self.m5.loc_1)
+        self.m5.delete_btn('btn_2', self.m5.loc_2)
+        self.m5.delete_btn('btn_3', self.m5.loc_3)
         self.btn_gesture_test()
 
         # repurpose space released by btn_ and btn_2, relabel btn_4 and run gesture test
-        self.m5.add_btn('btn_12', {'loc': (0, 208, 158, 32), 'lbl': 'JoinBtn12'})
+        self.m5.add_btn('btn_12', (0, 208, 158, 32), lbl='JoinBtn12')
 
-        self.m5.btn['btn_4']['lbl'] = 'Exit'
+        self.m5.label_btn((0, 208, 158, 32), lbl = 'Exit')
         self.btn_gesture_test()
 
     def wifi_test(self):

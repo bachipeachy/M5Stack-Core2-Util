@@ -94,8 +94,8 @@ class M5core2:
                      'btn_t': {'loc': self.loc_t}, 'btn_w': {'loc': self.loc_w}}        
         
         self.add_appbtns()
-
-        # self.update_clock(dt=True)
+        print("init routine ...", self.btns)
+        self.update_clock(dt=True)
         
 
     def power_up(self):
@@ -210,17 +210,19 @@ class M5core2:
                 self.color_btn(loc)
             self.label_btn(loc, **kwargs)
 
+            self.btns.update({uid: {'loc':loc}})
             self.touch = self.enable_touch()
+            
         else:
             print("* warning {} exists in self.btns".format('uid'))
 
 
-    def delete_btn(self, k, v):
+    def delete_btn(self, uid, loc):
 
-        if k in self.btns.keys():
-            print("* deleting  {} ".format(k))
-            del self.btns[k]
-            self.erase_btn(v)
+        if uid in self.btns.keys():
+            print("* deleting  {} ".format(uid))
+            del self.btns[uid]
+            self.color_btn(loc, color=self.BLACK)
             self.touch = self.enable_touch()
         else:
             print("* warning no such {} to delete in self.btns".format(k))
@@ -254,7 +256,7 @@ class M5core2:
         hms = h + ':' + m + ':' + s
 
         if dt is not None:
-            self.erase_btn(M5core2.btn_t)
+            self.color_btn(self.loc_t, color=self.BLACK)
             tl = [wd[t[6]], mo[t[1] - 1], str(t[2]) + ', ', hms]
             xl = [0, 64, 128, 192]
             yl = [4, 4, 4, 4]

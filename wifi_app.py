@@ -25,7 +25,7 @@ import ili9342c
 import vga1_16x16 as font16
 import vga1_8x8 as font8
 
-from m5core2 import M5core2
+from m5core2_p import M5core2
 
 
 class WifiApp:
@@ -66,11 +66,9 @@ class WifiApp:
 
     def btn_1(self, btn):
         """ display scanned WiFi signal strengths and connect/disconnect chosen essid """
-
-        self.m5.erase_window()
+        loc = self.m5.loc_1
+        self.m5.color_btn(self.m5.loc_w, color=self.m5.BLACK)
         count = 15
-        loc = btn['btn_1']['loc']
-
         def disconnect():
             print("disconnecting ..")
             _ = self.m5.disconnect_wifi()
@@ -165,15 +163,12 @@ if __name__ == "__main__":
 
     try:
         wa = WifiApp(essid='TBD', pwd='????')
-        wa.m5.btns['btn_1']['lbl'] = 'WiFi'
-        wa.m5.btns['btn_4']['lbl'] = 'QUIT'
-        wa.m5.paint_btns()
+        wa.m5.label_btn(wa.m5.loc_1, lbl = 'WiFi')
+        wa.m5.label_btn(wa.m5.loc_4, lbl = 'QUIT')
 
         # delete two appbtns
-        v = [wa.m5.btns['btn_2'], wa.m5.btns['btn_3']]
-        k = ['btn_2', 'btn_3']
-        d = dict(zip(k, v))
-        wa.m5.delete_btns(d)
+        wa.m5.delete_btn('btn_2', wa.m5.loc_2)
+        wa.m5.delete_btn('btn_3', wa.m5.loc_3)
         wa.run_apps_forever()
         
     except Exception as e:
