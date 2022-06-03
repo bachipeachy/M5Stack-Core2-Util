@@ -39,6 +39,22 @@ from sdcard import SDCard
 
 
 class M5core2:
+    btn_a = {'loc': (3, 240, 102, 40), 'lbl': 'BtnA'}
+    btn_b = {'loc': (109, 240, 102, 40), 'lbl': 'BtnB'}
+    btn_c = {'loc': (215, 240, 102, 40), 'lbl': 'BtnC'}
+
+    btn_t = {'loc': (0, 0, 320, 32), 'lbl': 'BtnT', 'fg': ili9342c.YELLOW, 'bg': ili9342c.BLACK}
+    btn_w = {'loc': (0, 32, 320, 176), 'lbl': 'BtnW', 'fg': ili9342c.BLACK, 'bg': ili9342c.BLACK}
+
+    btn_1 = {'loc': (0, 208, 78, 32), 'lbl': 'Btn1', 'fg': ili9342c.YELLOW, 'bg': ili9342c.BLUE}
+    btn_2 = {'loc': (80, 208, 78, 32), 'lbl': 'Btn2', 'fg': ili9342c.YELLOW, 'bg': ili9342c.BLUE}
+    btn_3 = {'loc': (160, 208, 78, 32), 'lbl': 'Btn3', 'fg': ili9342c.YELLOW, 'bg': ili9342c.BLUE}
+    btn_4 = {'loc': (240, 208, 78, 32), 'lbl': 'Btn4', 'fg': ili9342c.YELLOW, 'bg': ili9342c.BLUE}
+
+    btn_5 = {'loc': (0, 0, 78, 32), 'lbl': 'Btn4', 'fg': ili9342c.YELLOW, 'bg': ili9342c.BLUE}
+    btn_6 = {'loc': (80, 0, 78, 32), 'lbl': 'Btn5', 'fg': ili9342c.YELLOW, 'bg': ili9342c.BLUE}
+    btn_7 = {'loc': (160, 0, 78, 32), 'lbl': 'Btn6', 'fg': ili9342c.YELLOW, 'bg': ili9342c.BLUE}
+    btn_8 = {'loc': (240, 0, 78, 32), 'lbl': 'Btn7', 'fg': ili9342c.YELLOW, 'bg': ili9342c.BLUE}
 
     def __init__(self, essid=None, pwd=None, mdir='/sd', imu_samples=10, imu_wait=100):
         """ auto start power up, touch and tft services """
@@ -58,19 +74,16 @@ class M5core2:
         self.axp = self.power_up()
         self.spi2 = SPI(2, sck=Pin(18), mosi=Pin(23), miso=Pin(38))
         self.sensor = MPU6886(self.i2c, gyro_sf=SF_DEG_S)
-
         self.tft = self.enable_tft()
 
-        self.touch = None
-        self.m5btns = self.get_m5btns()
-        self.splbtns = self.get_splbtns()
-
-        self.btns = {}
-        self.add_btns(self.m5btns)
-        self.add_btns(self.splbtns)
-        self.add_btns(self.get_appbtns())
         self.greet()
         print("* M5Stack Core2 initialization complete")
+
+        self.touch = None
+        self.btns = {'btn_a': M5core2.btn_a, 'btn_b': M5core2.btn_b, 'btn_c': M5core2.btn_c,
+                     'btn_t': M5core2.btn_t, 'btn_w': M5core2.btn_w}
+        
+        self.add_appbtns()
         self.update_clock(dt=True)
 
     def power_up(self):
@@ -144,71 +157,43 @@ class M5core2:
     def greet(self):
         """ test initialization """
 
-        self.erase_btns({'btn_t': self.btns['btn_t']})
+        # $self.erase_btns({'btn_t': self.btns['btn_t']})
         self.tft.text(font16, "M5Core2> initialized!", 0, 0, ili9342c.WHITE, ili9342c.BLACK)
 
-    @staticmethod
-    def get_m5btns():
-        """ returns M5Stack Core2 preconfigured buttons """
+    def add_appbtns(self):
+        self.add_btn('btn_1', M5core2.btn_1)
+        self.add_btn('btn_2', M5core2.btn_2)
+        self.add_btn('btn_3', M5core2.btn_3)
+        self.add_btn('btn_4', M5core2.btn_4)
 
-        m5btns = {'btn_a': {'loc': (3, 240, 102, 40), 'lbl': 'BtnA'},
-                  'btn_b': {'loc': (109, 240, 102, 40), 'lbl': 'BtnB'},
-                  'btn_c': {'loc': (215, 240, 102, 40), 'lbl': 'BtnC'}}
-        return m5btns
+    def paint_btn(self, v):
+        
+        self.tft.fill_rect(v['loc'][0], v['loc'][1], v['loc'][2], v['loc'][3], v['bg'])
+        self.tft.text(font16, v['lbl'], v['loc'][0] + 4, v['loc'][1] + 8, v['fg'], v['bg'])
 
-    @staticmethod
-    def get_splbtns():
-        """ returns top wk_dt_tm display button """
+    def erase_btn(self, v):
 
-        splbtns = {'btn_t': {'loc': (0, 0, 320, 32), 'lbl': 'BtnT'},
-                   'btn_w': {'loc': (0, 32, 320, 176), 'lbl': 'BtnW'}}
-        return splbtns
+        self.tft.fill_rect(v['loc'][0], v['loc'][1], v['loc'][2], v['loc'][3], ili9342c.BLACK)
 
-    @staticmethod
-    def get_appbtns():
+    def add_btn(self, k, v):
 
-        appbtns = {'btn_1': {'loc': (0, 208, 78, 32), 'lbl': 'Btn1'},
-                   'btn_2': {'loc': (80, 208, 78, 32), 'lbl': 'Btn2'},
-                   'btn_3': {'loc': (160, 208, 78, 32), 'lbl': 'Btn3'},
-                   'btn_4': {'loc': (240, 208, 78, 32), 'lbl': 'Btn4'}}
-        return appbtns
+        print("* adding btn {} ".format(k))
+        if k not in self.btns.keys():
+            self.paint_btn(v)
+            self.btns.update({k: v})
+            self.touch = self.enable_touch()
+        else:
+            print("* warning {} exists in self.btns".format(k))
 
-    def add_btns(self, btns):
+    def delete_btn(self, k, v):
 
-        print("* adding {} btns {} ".format(len(btns), btns.keys()))
-        self.btns.update(btns)
-        self.paint_btns()
-        self.touch = self.enable_touch()
-
-    def delete_btns(self, btns):
-
-        print("* deleting {} btns {} ".format(len(btns), btns.keys()))
-        for k, v in btns.items():
+        if k in self.btns.keys():
+            print("* deleting  {} ".format(k))
             del self.btns[k]
-        self.erase_btns(btns)
-        self.touch = self.enable_touch()
-
-    def paint_btns(self):
-        """ paint or erase 'self.appbtns' in self.btns only   """
-
-        for k, vk in self.btns.items():
-            if k in list(self.m5btns.keys()):
-                continue
-            elif k in list(self.splbtns.keys()):
-                continue
-            else:
-                self.tft.fill_rect(vk['loc'][0], vk['loc'][1], vk['loc'][2], vk['loc'][3], ili9342c.BLUE)
-                self.tft.text(font16, vk['lbl'], vk['loc'][0] + 4, vk['loc'][1] + 8, ili9342c.YELLOW, ili9342c.BLUE)
-
-    def erase_btns(self, btns):
-
-        for k, vk in btns.items():
-            self.tft.fill_rect(vk['loc'][0], vk['loc'][1], vk['loc'][2], vk['loc'][3], ili9342c.BLACK)
-
-    def erase_window(self):
-        """ erase the window space defined by btn_w """
-
-        self.erase_btns({'btn_w': self.btns['btn_w']})
+            self.erase_btn(v)
+            self.touch = self.enable_touch()
+        else:
+            print("* warning no such {} to delete in self.btns".format(k))
 
     def write(self, tl, f=font8, xl=None, yl=None, fg=None, bg=None):
         """ write txt from a list at x,y coordinates in a list"""
@@ -239,7 +224,7 @@ class M5core2:
         hms = h + ':' + m + ':' + s
 
         if dt is not None:
-            self.erase_btns({'btn_t': self.btns['btn_t']})
+            self.erase_btn(M5core2.btn_t)
             tl = [wd[t[6]], mo[t[1] - 1], str(t[2]) + ', ', hms]
             xl = [0, 64, 128, 192]
             yl = [4, 4, 4, 4]
@@ -424,3 +409,10 @@ class M5core2:
 
         except Exception as e:
             print("ERROR: {}".format(e))
+
+
+if __name__ == "__main__":
+    
+    m5 = M5core2(essid='TBD', pwd='????')
+    m5.hard_reset()
+

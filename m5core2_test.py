@@ -21,7 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-from m5core2 import M5core2
+from m5core2_p import M5core2
 
 
 class M5core2Test:
@@ -53,15 +53,15 @@ class M5core2Test:
     def add_delete_btn_test(self):
 
         # delete three appbtns and run gesture test
-        v = [self.m5.btns['btn_1'], self.m5.btns['btn_2'], self.m5.btns['btn_3']]
-        k = ['btn_1', 'btn_2', 'btn_3']
-        d = dict(zip(k, v))
-        self.m5.delete_btns(d)
+        self.m5.delete_btn('btn_1', M5core2.btn_1)
+        self.m5.delete_btn('btn_2', M5core2.btn_2)
+        self.m5.delete_btn('btn_3', M5core2.btn_3)
         self.btn_gesture_test()
 
         # repurpose space released by btn_ and btn_2, relabel btn_4 and run gesture test
-        self.m5.add_btns({'btn_12': {'loc': (0, 208, 158, 32), 'lbl': 'JoinBtn12'}})
-        self.m5.btns['btn_4']['lbl'] = 'Exit'
+        self.m5.add_btn('btn_12', {'loc': (0, 208, 158, 32), 'lbl': 'JoinBtn12'})
+
+        self.m5.btn['btn_4']['lbl'] = 'Exit'
         self.btn_gesture_test()
 
     def wifi_test(self):
