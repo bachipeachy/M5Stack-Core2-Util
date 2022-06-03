@@ -39,22 +39,6 @@ from sdcard import SDCard
 
 
 class M5core2:
-    btn_a = {'loc': (3, 240, 102, 40), 'lbl': 'BtnA'}
-    btn_b = {'loc': (109, 240, 102, 40), 'lbl': 'BtnB'}
-    btn_c = {'loc': (215, 240, 102, 40), 'lbl': 'BtnC'}
-
-    btn_t = {'loc': (0, 0, 320, 32), 'lbl': 'BtnT', 'fg': ili9342c.YELLOW, 'bg': ili9342c.BLACK}
-    btn_w = {'loc': (0, 32, 320, 176), 'lbl': 'BtnW', 'fg': ili9342c.BLACK, 'bg': ili9342c.BLACK}
-
-    btn_1 = {'loc': (0, 208, 78, 32), 'lbl': 'Btn1', 'fg': ili9342c.YELLOW, 'bg': ili9342c.BLUE}
-    btn_2 = {'loc': (80, 208, 78, 32), 'lbl': 'Btn2', 'fg': ili9342c.YELLOW, 'bg': ili9342c.BLUE}
-    btn_3 = {'loc': (160, 208, 78, 32), 'lbl': 'Btn3', 'fg': ili9342c.YELLOW, 'bg': ili9342c.BLUE}
-    btn_4 = {'loc': (240, 208, 78, 32), 'lbl': 'Btn4', 'fg': ili9342c.YELLOW, 'bg': ili9342c.BLUE}
-
-    btn_5 = {'loc': (0, 0, 78, 32), 'lbl': 'Btn4', 'fg': ili9342c.YELLOW, 'bg': ili9342c.BLUE}
-    btn_6 = {'loc': (80, 0, 78, 32), 'lbl': 'Btn5', 'fg': ili9342c.YELLOW, 'bg': ili9342c.BLUE}
-    btn_7 = {'loc': (160, 0, 78, 32), 'lbl': 'Btn6', 'fg': ili9342c.YELLOW, 'bg': ili9342c.BLUE}
-    btn_8 = {'loc': (240, 0, 78, 32), 'lbl': 'Btn7', 'fg': ili9342c.YELLOW, 'bg': ili9342c.BLUE}
 
     def __init__(self, essid=None, pwd=None, mdir='/sd', imu_samples=10, imu_wait=100):
         """ auto start power up, touch and tft services """
@@ -79,12 +63,40 @@ class M5core2:
         self.greet()
         print("* M5Stack Core2 initialization complete")
 
+        self.loc_a = (3, 240, 102, 40)
+        self.loc_b = (109, 240, 102, 40)
+        self.loc_c = (215, 240, 102, 40)
+
+        self.loc_t = (0, 0, 320, 32)
+        self.loc_w = (0, 32, 320, 176)
+
+        self.loc_1 = (0, 208, 78, 32)
+        self.loc_2 = (80, 208, 78, 32)
+        self.loc_3 = (160, 208, 78, 32)
+        self.loc_4 = (240, 208, 78, 32)
+
+        self.loc_5 = (0, 0, 78, 32)
+        self.loc_6 = (80, 0, 78, 32)
+        self.loc_7 = (160, 0, 78, 32)
+        self.loc_8 = (240, 0, 78, 32)
+        
+        self.BLACK = ili9342c.BLACK
+        self.BLUE = ili9342c.BLUE
+        self.RED = ili9342c.RED
+        self.GREEN = ili9342c.GREEN
+        self.CYAN = ili9342c.CYAN
+        self.MAGENTA = ili9342c.MAGENTA
+        self.YELLOW = ili9342c.YELLOW
+        self.WHITE = ili9342c.WHITE
+
         self.touch = None
-        self.btns = {'btn_a': M5core2.btn_a, 'btn_b': M5core2.btn_b, 'btn_c': M5core2.btn_c,
-                     'btn_t': M5core2.btn_t, 'btn_w': M5core2.btn_w}
+        self.btns = {'btn_a': {'loc': self.loc_a}, 'btn_b': {'loc': self.loc_b}, 'btn_c': {'loc': self.loc_c},
+                     'btn_t': {'loc': self.loc_t}, 'btn_w': {'loc': self.loc_w}}        
         
         self.add_appbtns()
-        self.update_clock(dt=True)
+
+        # self.update_clock(dt=True)
+        
 
     def power_up(self):
         """ turn on M5Stack Core2 """
@@ -161,29 +173,47 @@ class M5core2:
         self.tft.text(font16, "M5Core2> initialized!", 0, 0, ili9342c.WHITE, ili9342c.BLACK)
 
     def add_appbtns(self):
-        self.add_btn('btn_1', M5core2.btn_1)
-        self.add_btn('btn_2', M5core2.btn_2)
-        self.add_btn('btn_3', M5core2.btn_3)
-        self.add_btn('btn_4', M5core2.btn_4)
+        self.add_btn('btn_1', self.loc_1, lbl='<11>', color=self.GREEN, fg=self.YELLOW, bg=self.MAGENTA)
+        self.add_btn('btn_2', self.loc_2, lbl="<2>", color=self.CYAN)
+        self.add_btn('btn_3', self.loc_3, color=self.RED, lbl="<3>", bg=self.RED)
+        self.add_btn('btn_4', self.loc_4, color=self.GREEN)
 
-    def paint_btn(self, v):
+    def color_btn(self, loc, color=None):
         
-        self.tft.fill_rect(v['loc'][0], v['loc'][1], v['loc'][2], v['loc'][3], v['bg'])
-        self.tft.text(font16, v['lbl'], v['loc'][0] + 4, v['loc'][1] + 8, v['fg'], v['bg'])
+        if color is None:
+            color=self.BLUE
+        self.tft.fill_rect(loc[0], loc[1], loc[2], loc[3], color)
+        return self
+        
+    def label_btn(self, loc, lbl= None, color=None, fg=None, bg=None):
+        
+        if lbl is None:
+            lbl = ''
+        if color is None:
+            color = self.BLUE
+        if fg is None:
+            fg=self.YELLOW
+        if bg is None:
+            bg=self.BLUE
+            
+        self.tft.text(font16, lbl, loc[0]+4, loc[1]+8, fg, bg)
+        return self
 
-    def erase_btn(self, v):
+    def add_btn(self, uid, loc, **kwargs):
+        
+        print("* adding btn {} ".format(uid))
 
-        self.tft.fill_rect(v['loc'][0], v['loc'][1], v['loc'][2], v['loc'][3], ili9342c.BLACK)
+        if  uid not in self.btns.keys():
+            if 'color' in kwargs.keys():
+                self.color_btn(loc, kwargs['color'])
+            else:
+                self.color_btn(loc)
+            self.label_btn(loc, **kwargs)
 
-    def add_btn(self, k, v):
-
-        print("* adding btn {} ".format(k))
-        if k not in self.btns.keys():
-            self.paint_btn(v)
-            self.btns.update({k: v})
             self.touch = self.enable_touch()
         else:
-            print("* warning {} exists in self.btns".format(k))
+            print("* warning {} exists in self.btns".format('uid'))
+
 
     def delete_btn(self, k, v):
 
