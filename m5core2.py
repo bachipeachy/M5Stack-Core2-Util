@@ -167,7 +167,6 @@ class M5core2:
     def greet(self):
         """ test initialization """
 
-        # $self.erase_btns({'btn_t': self.btns['btn_t']})
         self.tft.text(font16, "M5Core2> initialized!", 0, 0, ili9342c.WHITE, ili9342c.BLACK)
 
     def add_appbtns(self):

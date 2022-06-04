@@ -1,6 +1,7 @@
 # M5Core2 App Development Utilities
 A python utility for developing apps for M5Stack Core2 hardware
 
+
 ## Scope
 * m5core2.py contains a python class with various methods to simplify M5core2 apps using the touch screen, SDCard and various embedded IOT sensors.
 * These sensors include 6-axis IMU (Inertial Measuring Unit), Hall effect magfield sensor, temperature sensors and wireless devices.
@@ -16,3 +17,8 @@ A python utility for developing apps for M5Stack Core2 hardware
 
 ## wifI_app
 * Sample app that uses many of the utilities provided by M5core2 class
+
+## Note
+* The last update in its curent configuration has been made with this release
+* The project will tranform in to a new refactored code -- stay tuned
+* The plan is to create a BtnOS (acronym for Button Operating System) -- prounced as ButtonOS 
