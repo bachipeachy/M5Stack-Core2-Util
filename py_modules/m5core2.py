@@ -58,20 +58,43 @@ class M5core2:
         self.axp = self.power_up()
         self.spi2 = SPI(2, sck=Pin(18), mosi=Pin(23), miso=Pin(38))
         self.sensor = MPU6886(self.i2c, gyro_sf=SF_DEG_S)
-
         self.tft = self.enable_tft()
 
-        self.touch = None
-        self.m5btns = self.get_m5btns()
-        self.splbtns = self.get_splbtns()
-
-        self.btns = {}
-        self.add_btns(self.m5btns)
-        self.add_btns(self.splbtns)
-        self.add_btns(self.get_appbtns())
         self.greet()
         print("* M5Stack Core2 initialization complete")
-        self.update_clock()
+
+        self.loc_a = (3, 240, 102, 40)
+        self.loc_b = (109, 240, 102, 40)
+        self.loc_c = (215, 240, 102, 40)
+
+        self.loc_t = (0, 0, 320, 32)
+        self.loc_w = (0, 32, 320, 176)
+
+        self.loc_1 = (0, 208, 78, 32)
+        self.loc_2 = (80, 208, 78, 32)
+        self.loc_3 = (160, 208, 78, 32)
+        self.loc_4 = (240, 208, 78, 32)
+
+        self.loc_5 = (0, 0, 78, 32)
+        self.loc_6 = (80, 0, 78, 32)
+        self.loc_7 = (160, 0, 78, 32)
+        self.loc_8 = (240, 0, 78, 32)
+
+        self.BLACK = ili9342c.BLACK
+        self.BLUE = ili9342c.BLUE
+        self.RED = ili9342c.RED
+        self.GREEN = ili9342c.GREEN
+        self.CYAN = ili9342c.CYAN
+        self.MAGENTA = ili9342c.MAGENTA
+        self.YELLOW = ili9342c.YELLOW
+        self.WHITE = ili9342c.WHITE
+
+        self.touch = None
+        self.btns = {'btn_a': {'loc': self.loc_a}, 'btn_b': {'loc': self.loc_b}, 'btn_c': {'loc': self.loc_c},
+                     'btn_t': {'loc': self.loc_t}, 'btn_w': {'loc': self.loc_w}}
+
+        self.add_appbtns()
+        self.update_clock(dt=True)
 
     def power_up(self):
         """ turn on M5Stack Core2 """
@@ -116,7 +139,7 @@ class M5core2:
     def enable_touch(self):
         """ enable touch with current btns passed as parm """
 
-        touch = FocalTouch(self.i2c, {k: v['loc'] for k, v in self.btns.items()})
+        touch = FocalTouch(self.i2c, self.btns)
         print("* touch enabled {} btns with {}".format(len(self.btns), self.btns.keys()))
         return touch
 
@@ -144,83 +167,53 @@ class M5core2:
     def greet(self):
         """ test initialization """
 
-        self.erase_btns({'btn_t':self.btns['btn_t']})
         self.tft.text(font16, "M5Core2> initialized!", 0, 0, ili9342c.WHITE, ili9342c.BLACK)
 
-    @staticmethod
-    def get_m5btns():
-        """ returns M5Stack Core2 preconfigured buttons """
+    def add_appbtns(self):
+        self.add_btn('btn_1', self.loc_1, lbl='Btn1')
+        self.add_btn('btn_2', self.loc_2, lbl='Btn2')
+        self.add_btn('btn_3', self.loc_3, lbl='Btn3')
+        self.add_btn('btn_4', self.loc_4, lbl='Btn4')
 
-        m5btns = {'btn_a': {'loc': (3, 240, 102, 40), 'lbl': 'BtnA'},
-                  'btn_b': {'loc': (109, 240, 102, 40), 'lbl': 'BtnB'},
-                  'btn_c': {'loc': (215, 240, 102, 40), 'lbl': 'BtnC'}}
-        return m5btns
+    def paint_btn(self, loc, lbl=None, fg=None, bg=None):
 
-    @staticmethod
-    def get_splbtns():
-        """ returns top wk_dt_tm display button """
+        if lbl is None:
+            lbl = ''
+        else:
+            lbl = lbl
+        if fg is None:
+            fg = self.YELLOW
+        if bg is None:
+            bg = self.BLUE
 
-        splbtns = {'btn_t': {'loc': (0, 0, 320, 32), 'lbl': 'BtnT'},
-                   'btn_w': {'loc': (0, 32, 320, 176), 'lbl': 'BtnW'}}
-        return splbtns
+        self.tft.fill_rect(loc[0], loc[1], loc[2], loc[3], bg)
+        self.tft.text(font16, lbl, loc[0] + 4, loc[1] + 8, fg, bg)
 
-    @staticmethod
-    def get_appbtns():
+        return self
 
-        appbtns = {'btn_1': {'loc': (0, 208, 78, 32), 'lbl': 'Btn1'},
-                   'btn_2': {'loc': (80, 208, 78, 32), 'lbl': 'Btn2'},
-                   'btn_3': {'loc': (160, 208, 78, 32), 'lbl': 'Btn3'},
-                   'btn_4': {'loc': (240, 208, 78, 32), 'lbl': 'Btn4'}}
-        return appbtns
+    def add_btn(self, uid, loc, **kwargs):
 
-    def add_btns(self, btns):
+        print("* adding btn {} ".format(uid))
+        print(kwargs)
+        if uid not in self.btns.keys():
+            self.paint_btn(loc, **kwargs)
+            self.btns.update({uid: {'loc': loc}})
+            self.touch = self.enable_touch()
 
-        if isinstance(btns, dict):
-            print("* adding {} btns {} ".format(len(btns), btns.keys()))
-            self.btns.update(btns)
-            self.paint_btns()
+        else:
+            print("* warning {} exists in self.btns".format('uid'))
+
+    def delete_btn(self, uid, loc):
+
+        if uid in self.btns.keys():
+            print("* deleting  {} ".format(uid))
+            del self.btns[uid]
+            self.paint_btn(loc, bg=self.BLACK)
             self.touch = self.enable_touch()
         else:
-            print("* error expected type dict byt got {}".format(type(btns)))
+            print("* warning no such {} to delete in self.btns".format(uid))
 
-    def delete_btns(self, btns):
-
-        if isinstance(btns, dict):
-            print("deleting {} btns {} ".format(len(btns), btns.keys()))
-            for k, v in btns.items():
-                del self.btns[k]
-            self.erase_btns(btns)
-            self.touch = self.enable_touch()
-        else:
-            print("* error expected type dict byt got {}".format(type(btns)))
-
-    def paint_btns(self):
-        """ paint or erase 'self.appbtns' in self.btns only   """
-
-
-        for k, vk in self.btns.items():
-            if k in list(self.m5btns.keys()):
-                continue
-            elif k in list(self.splbtns.keys()):
-                continue
-            else:
-                self.tft.fill_rect(vk['loc'][0], vk['loc'][1], vk['loc'][2], vk['loc'][3], ili9342c.BLUE)
-                self.tft.text(font16, vk['lbl'], vk['loc'][0] + 4, vk['loc'][1] + 8, ili9342c.YELLOW, ili9342c.BLUE)
-
-    def erase_btns(self, btns):
-        print("* erasing btns ", btns)
-
-        for k, vk in btns.items():
-            self.tft.fill_rect(vk['loc'][0], vk['loc'][1], vk['loc'][2], vk['loc'][3], ili9342c.BLACK)
-
-
-
-    def erase_window(self):
-        """ erase the window space defined by btn_w """
-
-        self.erase_btns({'btn_w':self.btns['btn_w']})
-
-    def txt(self, tl, f=font8, xl=None, yl=None, fg=None, bg=None):
+    def write(self, tl, f=font8, xl=None, yl=None, fg=None, bg=None):
         """ write txt from a list at x,y coordinates in a list"""
 
         if xl is None:
@@ -248,18 +241,19 @@ class M5core2:
         s = str(t[5]) if t[5] > 9 else '0' + str(t[5])
         hms = h + ':' + m + ':' + s
 
-        if dt is None:
-            tl = [wd[t[6]], mo[t[1]], str(t[2]) + ', ', hms]
+        if dt is not None:
+            self.paint_btn(self.loc_t, bg=self.BLACK)
+            tl = [wd[t[6]], mo[t[1] - 1], str(t[2]) + ', ', hms]
             xl = [0, 64, 128, 192]
             yl = [4, 4, 4, 4]
         else:
+            self.tft.fill_rect(176, 0, 144, 32, ili9342c.BLACK)
             tl = [hms]
             xl = [192]
             yl = [4]
 
-        self.erase_btns({'btn_t':self.btns['btn_t']})
-        self.txt(f=font16, tl=tl, xl=xl, yl=yl, fg=ili9342c.YELLOW)
-        print("* updated clock -> ", hms)
+        self.write(f=font16, tl=tl, xl=xl, yl=yl, fg=ili9342c.YELLOW)
+        print("* updated clock -> ", hms, t)
         return t
 
     @staticmethod
@@ -313,11 +307,6 @@ class M5core2:
     @staticmethod
     def scan_wifi():
         """ scan wlan to extract ssid and RSSI """
-
-        wlan = network.WLAN(network.STA_IF)
-        wlan.active(True)
-        print("scanning wifi ..")
-        vals = wlan.scan()
         """
         wifi list will have 2 of 6 tuples -- 'ssid, bssid, ch, RSSI, auth and hidden'
         # RSSI - Received Signal Strength Indicator
@@ -326,21 +315,32 @@ class M5core2:
         OK        -70 to -80  2 bars yellow
         Bad       -80 to -90   1 bar  red
         """
-        ls = []
-        for v in vals:
+
+        bar4 = -67
+        bar3 = -78
+        bar2 = 80
+
+        wlan = network.WLAN(network.STA_IF)
+        wlan.active(True)
+        print("scanning wifi ..")
+        vals = wlan.scan()
+
+        lines = []
+        for i, v in enumerate(vals):
             ssid = v[0]
             rssi = v[3]
-            if rssi >= -67:
-                q = 4
-            elif rssi >= -70:
-                q = 3
-            elif rssi >= -80:
-                q = 2
+            if rssi >= bar4:
+                bars = 4
+            elif rssi >= bar3:
+                bars = 3
+            elif rssi >= bar2:
+                bars = 2
             else:
-                q = 1
-            ls.append((ssid, rssi, q))
-        print("{}: ".format(ls))
-        return ls
+                bars = 1
+            lines.append((ssid, rssi, bars))
+
+        print("wifi scanned {} essid's".format(len(lines)))
+        return lines
 
     def read_imu(self):
         """  returns a dict of id, timestamp and readings as a list of 3-values tuple & uom, and temp """
@@ -427,51 +427,3 @@ class M5core2:
 
         except Exception as e:
             print("ERROR: {}".format(e))
-
-
-"""
-if __name__ == "__main__":
-
-    m5 = M5core2()
-    print("{} m5.btns with {}".format(len(m5.btns), m5.btns.keys()))
-
-    def btn_gesture_test():
-        # test method: touch.btn_gesture()
-        touchctr = 5
-        print("btn_gesture test runs for {} iterations ..\n"
-              "on configured btns TAP, HOLD or swipe LEFT, RIGHT, UP or DOWN ..".format(touchctr))
-
-        for i in range(touchctr):
-            print(i + 1, end='')
-            while m5.touch.btn_gesture() is None:
-                pass
-        print("exiting btn_gesture_test ..")
-
-
-    try:
-        # run preconfigured btn gesture test
-        btn_gesture_test()
-
-        # delete three appbtns and run gesture test
-        v = [m5.btns['btn_1'], m5.btns['btn_2'], m5.btns['btn_3']]
-        k = ['btn_1', 'btn_2', 'btn_3']
-        d = dict(zip(k, v))
-        m5.delete_btns(d)
-        btn_gesture_test()
-
-        # repurpose space released by btn_ and btn_2, relabel btn_4 and run gesture test
-        m5.add_btns({'btn_12': {'loc': (0, 208, 158, 32), 'lbl': 'JoinBtn12'}})
-        m5.btns['btn_4']['lbl'] = 'Exit'
-        btn_gesture_test()
-
-        # test writing-in and erasing the window area
-        m5.txt(tl=["This is a test for many ", "text", "chunks"], xl=[0, 176, 224], yl=[48, 64, 80])
-        time.sleep(5)
-        m5.erase_window()
-
-    except Exception as e:
-        print(" oops I blew up ..", e)
-
-    finally:
-        m5.hard_reset()
-"""

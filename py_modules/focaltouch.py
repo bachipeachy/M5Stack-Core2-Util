@@ -61,7 +61,7 @@ class FocalTouch:
 
         self.i2c = i2c
         if btns is None:
-            self.btns = {'screen': (0, 0, 320, 240)}
+            self.btns = {'screen': {'loc': (0, 0, 320, 240)}}
         else:
             self.btns = btns
         self.address = address
@@ -252,11 +252,11 @@ class FocalTouch:
     def btn_gesture(self):
         """ returns the touched btn from a dict of btns with gesture 'action' added"""
 
-        for id, loc in self.btns.items():
-            if self.touch_detected(loc):
+        for k, v in self.btns.items():
+            if self.touch_detected(v['loc']):
                 ges = self._gesture()
                 if ges is not None and ges is not "IGNORE":
-                    btn = {"id": id, "loc": loc, "action": ges}
+                    btn = {k: {'loc': v['loc'], 'action': ges}}
                     print("# gestured -> {}".format(btn))
                     return btn
         return None
